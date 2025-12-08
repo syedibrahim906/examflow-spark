@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { NavLink } from "@/components/NavLink";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Home,
   BookOpen,
@@ -12,9 +12,13 @@ import {
   ChevronLeft,
   ChevronRight,
   GraduationCap,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
 
 const navItems = [
   { title: "Home", url: "/teacher", icon: Home },
@@ -26,9 +30,30 @@ const navItems = [
   { title: "Settings", url: "/teacher/settings", icon: Settings },
 ];
 
-export function TeacherSidebar() {
+interface TeacherSidebarProps {
+  onNavigate?: () => void;
+}
+
+export function TeacherSidebar({ onNavigate }: TeacherSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+
+  const getInitials = (email: string) => {
+    return email.substring(0, 2).toUpperCase();
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
+
+  const handleNavClick = () => {
+    if (onNavigate) {
+      onNavigate();
+    }
+  };
 
   return (
     <aside
@@ -55,6 +80,7 @@ export function TeacherSidebar() {
             <NavLink
               key={item.title}
               to={item.url}
+              onClick={handleNavClick}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200",
                 "hover:bg-muted/50",
@@ -69,8 +95,46 @@ export function TeacherSidebar() {
         })}
       </nav>
 
-      {/* Collapse Toggle */}
-      <div className="p-2 border-t border-border">
+      {/* User Section */}
+      {user && (
+        <>
+          <Separator />
+          <div className={cn("p-3", collapsed && "flex justify-center")}>
+            {collapsed ? (
+              <Avatar className="w-8 h-8 cursor-pointer" onClick={() => setCollapsed(false)}>
+                <AvatarImage src={user.user_metadata?.avatar_url} />
+                <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                  {getInitials(user.email || "U")}
+                </AvatarFallback>
+              </Avatar>
+            ) : (
+              <div className="flex items-center gap-3 p-2 rounded-lg bg-muted/50">
+                <Avatar className="w-9 h-9">
+                  <AvatarImage src={user.user_metadata?.avatar_url} />
+                  <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                    {getInitials(user.email || "U")}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{user.email}</p>
+                  <p className="text-xs text-muted-foreground">Teacher</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="flex-shrink-0 h-8 w-8"
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* Collapse Toggle - Hidden on mobile */}
+      <div className="p-2 border-t border-border hidden lg:block">
         <Button
           variant="ghost"
           size="sm"

@@ -3,7 +3,9 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import { TeacherLayout } from "./components/layout/TeacherLayout";
 import TeacherHome from "./pages/teacher/TeacherHome";
@@ -19,32 +21,35 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          
-          {/* Teacher Routes */}
-          <Route path="/teacher" element={<TeacherLayout />}>
-            <Route index element={<TeacherHome />} />
-            <Route path="subjects" element={<Subjects />} />
-            <Route path="syllabus" element={<Syllabus />} />
-            <Route path="questions" element={<QuestionBank />} />
-            <Route path="create-exam" element={<CreateExam />} />
-            <Route path="results" element={<Results />} />
-            <Route path="settings" element={<TeacherSettings />} />
-          </Route>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
+            
+            {/* Teacher Routes */}
+            <Route path="/teacher" element={<TeacherLayout />}>
+              <Route index element={<TeacherHome />} />
+              <Route path="subjects" element={<Subjects />} />
+              <Route path="syllabus" element={<Syllabus />} />
+              <Route path="questions" element={<QuestionBank />} />
+              <Route path="create-exam" element={<CreateExam />} />
+              <Route path="results" element={<Results />} />
+              <Route path="settings" element={<TeacherSettings />} />
+            </Route>
 
-          {/* Student Exam Route */}
-          <Route path="/exam/:examId" element={<StudentExam />} />
+            {/* Student Exam Route */}
+            <Route path="/exam/:examId" element={<StudentExam />} />
 
-          {/* Catch-all */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+            {/* Catch-all */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
